@@ -1,0 +1,93 @@
+---
+title: 'Capstone Project: Milestone Report'
+author: "Max Kazakov"
+date: "Saturday, July 25, 2015"
+output: 
+    html_document: 
+        theme: readable
+---
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+library(tm)
+library(ggplot2)
+source("multiplot.R")
+load("temp.RData")
+```
+##Synopsis
+The purpose of this milestone report is to show the results of exploratory analysis performed on the text data and explain basic data transformations that make raw data clean and structured.
+
+##Exploratory analysis
+###Data
+In linguistics, a corpus (plural corpora) is a large and structured set of texts. They are used to do statistical analysis. This project data corpora is provided by [http://www.corpora.heliohost.org/].  
+
+English corpora consists of three text files:  **en_US.blogs.txt**, **en_US.news.txt**, **en_US.twitter.txt**. Each text file contains text samples obtained from different sources: blog posts, news articles and twitter users' twits accordingly.  
+
+###Summary statistics
+Each text corpus consists of different number of samples. Moreover even text samples greatly vary in length. The following summary explains the number of samples(lines) in each corpus, number of words, length of the longest line in words and average number of words in the line.
+```{r,echo=FALSE}
+ss
+ 
+p1 <- qplot(x=c("blogs", "news", "twitter"),y=line_cnt,geom="bar"
+            ,data=ss,stat="identity",main="Line count",xlab="corpus")
+p2 <- qplot(x=c("blogs", "news", "twitter"),y=word_cnt,geom="bar"
+            ,data=ss,stat="identity",main="Word count",xlab="corpus")
+p3 <- qplot(x=c("blogs", "news", "twitter"),y=max_line_words,geom="bar"
+            ,data=ss,stat="identity",main="Longest line size"
+            ,ylab="words number",xlab="corpus")
+p4 <- qplot(x=c("blogs", "news", "twitter"),y=avg_line_words,geom="bar"
+            ,data=ss,stat="identity",main="Average line size"
+            , ylab="words number",xlab="corpus")
+multiplot(p1, p2, p3, p4, layout=matrix(c(1,2,3,4), nrow=2, byrow=TRUE))
+```
+
+###Preprocessing
+Natural language is unstructured, heterogeneous and often contains mistakes. Also natural language text contains words and symbols unimportant for this analysis. Therefore initial raw data requires number of transformation to make it clean and ready for further processsing, analysis and modelling.
+For example this is what raw twitter samples looks like:
+```{r, echo=FALSE}
+corpus[[3]]$content[1:3]
+```
+
+The following transformations were performed on data:  
+
+-   lower case transformation;  
+-   contraction removal;  
+-   punctuation removal;  
+-   numbers removal;  
+-   extra whitespace removal;  
+-   stemming.  
+
+As the result of these transformations data becomes tidy and ready for computer processing. For example this is how the same samples from twitter looks like now:  
+```{r, echo=FALSE}
+corpus.clear[[3]]$content[1:3]
+```
+
+###Tokenization
+In lexical analysis, tokenization is the process of breaking a stream of text up into words, phrases, symbols, or other meaningful elements called tokens. For this project tokens are distinct words and sequences of words called ngrams. Depending on the length of ngram it can be called also unigram(one word), bigram(2 words), trigram(3 words), etc.  
+
+For instance these are most frequent unigrams in corpora.
+```{r,echo=FALSE}
+m <- as.matrix(tdmUni)
+v <- sort(rowSums(m), decreasing=TRUE)
+v <- v[v>5]
+m[head(names(v),15),]
+```
+
+###Tokens frequency
+After the tokenization it's possible to calculate tokens' frequency and estimate it's distribution.
+Following graph with log-log scale shows that tokens frequency distribution follow the Zipf's law which states that given some corpus of natural language utterances, the frequency of any word is inversely proportional to its rank in the frequency table.
+```{r,echo=FALSE,message=FALSE}
+qplot(1:1000,v[1:1000],main="Tokens frequency",xlab="rank_log",ylab="frequency_log",geom=c("point","smooth"), log="xy", method="lm")
+```
+  
+###Results
+This exploratory analysis lead to the following findings:  
+
+-   Some corpora text may contain very specific or non-sence words (twitter) and require additional filtering;  
+-   Zipf's law takes place in the tokens frequency distribution of the data; 
+-   Many ngrams frequently repeat in the corpora even if it's obtained from different sources.  
+
+###Conclusion
+The report covers brief exloratory analysis of the corpora data, including data analysis, cleaning process and summary statistics of it's components. Also this report findings can be used for further prediction model development.  
+  
+  
+  
+  
